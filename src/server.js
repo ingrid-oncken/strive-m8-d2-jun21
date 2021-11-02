@@ -2,6 +2,7 @@ import express from "express"
 import mongoose from "mongoose"
 import cors from "cors"
 import listEndpoints from "express-list-endpoints"
+import usersRouter from "./users/index.js"
 
 import { unauthorizedHandler, forbiddenHandler, catchAllHandler } from "./errorHandlers.js"
 
@@ -14,6 +15,8 @@ server.use(cors())
 server.use(express.json())
 
 // ******************** ROUTES ******************************
+
+server.use("/users", usersRouter)
 
 // ********************** ERROR HANDLERS *************************
 
