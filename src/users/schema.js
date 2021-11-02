@@ -8,11 +8,12 @@ const UserSchema = new Schema({
   surname: { type: String, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
+  role: { type: String, default: "User", enum: ["User", "Admin"] },
 })
 
 UserSchema.pre("save", async function (next) {
   // BEFORE saving the user in db, hash the password
-  const newUser = this
+  const newUser = this // this refers to the current user trying to be saved in db
   const plainPW = newUser.password
 
   if (newUser.isModified("password")) {
@@ -31,6 +32,19 @@ UserSchema.methods.toJSON = function () {
   delete userObject.__v
 
   return userObject
+}
+
+UserSchema.statics.checkCredentials = async function (email, plainPW) {
+  // 1. find the user by email
+  const user = await this.findOne({ email }) // "this" refers to UserModel
+
+  if (user) {
+    // 2. if the user is found we are going to compare plainPW with hashed one
+    const isMatch = await bcrypt.compare(plainPW, user.password)
+    // 3. Return a meaningful response
+    if (isMatch) return user
+    else return null // if the pw is not ok I'm returning null
+  } else return null // if the email is not ok I'm returning null as well
 }
 
 export default model("User", UserSchema)
